@@ -1,7 +1,7 @@
 pandas==2.3.3
 numpy==2.3.5
 scikit-learn==1.7.2
-matplotlib==3.10.6
+matplotlib==3.11.1
 reportlab==4.4.7
 seaborn==0.13.2
 Django==6.0.8
