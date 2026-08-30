@@ -72,6 +72,40 @@ def install_dependencies(python: Path) -> None:
     REQUIREMENTS_MARKER.write_text(f"{digest}\n", encoding="utf-8")
 
 
+def verify_cryptography_backend(python: Path) -> None:
+    """Fail early with an actionable message when Windows blocks CFFI.
+
+    ``cryptography`` loads CFFI while Django imports the settings module.  On
+    managed Windows devices, application-control policies can deny that native
+    extension before Django has a chance to show a useful error.  Do a tiny
+    preflight import so the launcher can identify that situation precisely.
+    """
+    result = subprocess.run(
+        [str(python), "-c", "from cryptography.fernet import Fernet"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0:
+        return
+
+    error = f"{result.stdout}\n{result.stderr}".lower()
+    if os.name == "nt" and "_cffi_backend" in error and "dll load failed" in error:
+        raise SystemExit(
+            "\nWindows application control blocked CFFI, a required native "
+            "component of cryptography. Aegis-Credit cannot safely run without "
+            "its encryption library (and the dashboard also needs native NumPy "
+            "and scikit-learn modules). Ask your IT administrator to allow native "
+            "*.pyd extensions in this project's .venv, including "
+            "_cffi_backend*.pyd, then run python run.py again. If your "
+            "organisation provides an approved Docker Desktop installation, you "
+            "can instead start Docker Desktop and use Start Aegis-Credit "
+            "Docker.bat.\n"
+        )
+
+    details = result.stderr.strip() or result.stdout.strip() or "no diagnostic output"
+    raise SystemExit(f"Unable to load the required cryptography package:\n{details}")
+
+
 def parse_env_file(path: Path) -> dict[str, str]:
     """Read the deliberately simple KEY=VALUE local launcher file."""
     values: dict[str, str] = {}
@@ -257,6 +291,7 @@ def main() -> None:
         return
     python = create_venv_if_needed()
     install_dependencies(python)
+    verify_cryptography_backend(python)
     environment = command_environment()
 
     if args.launcher_command == "manage":

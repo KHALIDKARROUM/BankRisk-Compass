@@ -23,6 +23,8 @@ services:
         value: "False"
       - key: LOGIN_REQUIRED
         value: "True"
+      - key: DEPLOYMENT_TENANT_ID
+        sync: false
       - key: LOCAL_DEMO_MODE
         value: "False"
       - key: DATA_PROVENANCE_VERIFIED
@@ -111,6 +113,8 @@ services:
         value: "False"
       - key: LOGIN_REQUIRED
         value: "True"
+      - key: DEPLOYMENT_TENANT_ID
+        sync: false
       - key: LOCAL_DEMO_MODE
         value: "False"
       - key: DATA_PROVENANCE_VERIFIED
@@ -190,6 +194,8 @@ services:
         value: "False"
       - key: LOGIN_REQUIRED
         value: "True"
+      - key: DEPLOYMENT_TENANT_ID
+        sync: false
       - key: LOCAL_DEMO_MODE
         value: "False"
       - key: DATA_PROVENANCE_VERIFIED

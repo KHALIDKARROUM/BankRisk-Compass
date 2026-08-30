@@ -321,6 +321,7 @@ SCORING_API_KEYS = merge_legacy_scoring_key(
 LOGIN_REQUIRED = env_bool("LOGIN_REQUIRED", True)
 DATA_PROVENANCE_VERIFIED = env_bool("DATA_PROVENANCE_VERIFIED", False)
 LOCAL_DEMO_MODE = env_bool("LOCAL_DEMO_MODE", False)
+DEPLOYMENT_TENANT_ID = os.getenv("DEPLOYMENT_TENANT_ID", "").strip()
 CASE_RETENTION_DAYS = env_int("CASE_RETENTION_DAYS", 365, minimum=1)
 ACCESS_LOG_RETENTION_DAYS = env_int(
     "ACCESS_LOG_RETENTION_DAYS",
@@ -364,6 +365,7 @@ def validate_runtime_configuration(
     database_ssl_required: bool,
     secure_ssl_redirect: bool,
     scoring_api_key: str,
+    deployment_tenant_id: str = "",
 ) -> None:
     if scoring_api_key and len(scoring_api_key) < 32:
         raise ImproperlyConfigured("SCORING_API_KEY must contain at least 32 characters when enabled.")
@@ -383,6 +385,11 @@ def validate_runtime_configuration(
         raise ImproperlyConfigured("DB_SSL_REQUIRE cannot be disabled when DEBUG=False.")
     if not debug and not secure_ssl_redirect:
         raise ImproperlyConfigured("SECURE_SSL_REDIRECT cannot be disabled when DEBUG=False.")
+    if not debug and not deployment_tenant_id:
+        raise ImproperlyConfigured(
+            "DEPLOYMENT_TENANT_ID is required in shared deployments; "
+            "Aegis-Credit supports one tenant per deployment."
+        )
 
 
 validate_runtime_configuration(
@@ -395,6 +402,7 @@ validate_runtime_configuration(
     database_ssl_required=DB_SSL_REQUIRE,
     secure_ssl_redirect=SECURE_SSL_REDIRECT,
     scoring_api_key=SCORING_API_KEY,
+    deployment_tenant_id=DEPLOYMENT_TENANT_ID,
 )
 
 LOGIN_URL = "login"

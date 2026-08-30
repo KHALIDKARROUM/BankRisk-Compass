@@ -14,6 +14,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 from src.feature_contract import (
+    FEATURE_CONTRACT_VERSION,
     FEATURES,
     FeatureContractError,
     model_feature_frame,
@@ -372,6 +373,21 @@ class ReleaseArtifactTests(unittest.TestCase):
     def test_quick_release_is_rejected_before_training(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "cannot produce a release"):
             train_and_save(quick=True, release=True)
+
+    def test_demo_and_release_modes_are_mutually_exclusive(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "exactly one artifact mode"):
+            train_and_save(release=False, demo=False)
+
+
+class CurrentArtifactContractTests(unittest.TestCase):
+    def test_checked_in_demo_manifest_declares_the_current_contract(self) -> None:
+        manifest = json.loads(
+            (Path(__file__).resolve().parents[1] / "models" / "model_manifest.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(manifest["feature_contract_version"], FEATURE_CONTRACT_VERSION)
+        self.assertEqual(manifest["dataset_kind"], "synthetic_demo")
 
 
 if __name__ == "__main__":

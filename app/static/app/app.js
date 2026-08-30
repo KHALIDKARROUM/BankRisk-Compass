@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const storedTheme = (() => {
         try {
-            return localStorage.getItem("vantage-risk-theme");
+            return localStorage.getItem("aegis-credit-theme");
         } catch {
             return null;
         }
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const nextTheme = root.dataset.theme === "dark" ? "light" : "dark";
         root.dataset.theme = nextTheme;
         try {
-            localStorage.setItem("vantage-risk-theme", nextTheme);
+            localStorage.setItem("aegis-credit-theme", nextTheme);
         } catch {
             // The visual setting still works when browser storage is unavailable.
         }

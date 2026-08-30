@@ -114,6 +114,7 @@ class EnvironmentSettingTests(SimpleTestCase):
                 database_ssl_required=True,
                 secure_ssl_redirect=True,
                 scoring_api_key="",
+                deployment_tenant_id="client-a",
             )
         with self.assertRaisesRegex(ImproperlyConfigured, "DATABASE_URL"):
             project_settings.validate_runtime_configuration(
@@ -126,6 +127,7 @@ class EnvironmentSettingTests(SimpleTestCase):
                 database_ssl_required=True,
                 secure_ssl_redirect=True,
                 scoring_api_key="",
+                deployment_tenant_id="client-a",
             )
 
     def test_demo_mode_is_rejected_in_production(self) -> None:
@@ -153,6 +155,7 @@ class EnvironmentSettingTests(SimpleTestCase):
             "database_ssl_required": True,
             "secure_ssl_redirect": True,
             "scoring_api_key": "",
+            "deployment_tenant_id": "client-a",
         }
         for name, value, message in (
             ("database_engine", "django.db.backends.sqlite3", "PostgreSQL"),
@@ -165,6 +168,21 @@ class EnvironmentSettingTests(SimpleTestCase):
                 message,
             ):
                 project_settings.validate_runtime_configuration(**configured_values)
+
+    def test_shared_deployment_requires_a_tenant_identifier(self) -> None:
+        with self.assertRaisesRegex(ImproperlyConfigured, "DEPLOYMENT_TENANT_ID"):
+            project_settings.validate_runtime_configuration(
+                debug=False,
+                login_required=True,
+                local_demo_mode=False,
+                data_provenance_verified=False,
+                configured_database_url="postgresql://database/example",
+                database_engine="django.db.backends.postgresql",
+                database_ssl_required=True,
+                secure_ssl_redirect=True,
+                scoring_api_key="",
+                deployment_tenant_id="",
+            )
 
     def test_new_operational_limits_have_safe_defaults(self) -> None:
         self.assertEqual(project_settings.MAX_XLSX_UNCOMPRESSED_BYTES, 50 * 1024 * 1024)

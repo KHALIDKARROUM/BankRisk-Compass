@@ -23,7 +23,9 @@ the affected version.
 - Back up and restore-test the case database.
 - Treat pickle/joblib model artifacts as trusted-code artifacts. Load only files
   produced by the controlled training pipeline and verify `models/model_manifest.json`.
-- Keep Python and pinned dependencies updated after compatibility testing.
+- CI blocks known advisories with `pip-audit` against the three committed
+  requirements files; Dependabot opens weekly dependency and workflow updates.
+  Review and merge those updates promptly after the test suite passes.
 
 This repository is a demonstration system and has not undergone an external
 penetration test.

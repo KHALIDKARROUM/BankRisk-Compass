@@ -45,12 +45,11 @@ A release must:
 - snapshot generated reports beside that model and sign every report digest in
   the manifest.
 
-The checked-in model is an unsigned demonstration artifact and must not be
-promoted. Regenerating a signed model is intentionally blocked until the
-provenance checklist is completed and release credentials are available.
-The hardened training code targets model version `2.2.0`; the checked-in
-`2.1.0` demo artifact and its historical reports have deliberately not been
-rewritten or relabeled.
+The checked-in `2.2.0` model is an unsigned synthetic demonstration artifact
+and must not be promoted. It is rebuilt with `python -m src.train_model --demo
+--quick` after regenerating the deterministic data. Regenerating a signed
+model remains blocked until a separate production dataset's provenance
+checklist is completed and release credentials are available.
 
 ## Monitoring and external validation
 

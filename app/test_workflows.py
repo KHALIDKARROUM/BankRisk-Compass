@@ -748,6 +748,7 @@ class OutcomeAndMonitoringWorkflowTests(TestCase):
         self.assertFalse(CaseOutcome.objects.exists())
         self.assertFalse(CaseReviewEvent.objects.exists())
 
+    @override_settings(LOCAL_DEMO_MODE=True)
     def test_authenticated_monitoring_run_persists_alert_and_outcome_evidence(self) -> None:
         manifest = json.loads(services.MODEL_MANIFEST_PATH.read_text(encoding="utf-8"))
         performing_case = make_case(

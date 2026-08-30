@@ -1,13 +1,13 @@
 {% extends "app/base.html" %}
 
-{% block title %}Service error · Vantage Risk{% endblock %}
+{% block title %}Service error · Aegis-Credit{% endblock %}
 
 {% block content %}
 <section class="error-shell" aria-labelledby="error-title">
     <article class="panel error-card">
         <span class="error-code" aria-hidden="true">500</span>
         <span class="eyebrow">Service error</span>
-        <h1 id="error-title">Vantage Risk could not complete the request</h1>
+        <h1 id="error-title">Aegis-Credit could not complete the request</h1>
         <p>No decision should be made from an incomplete response. Try again once; if the problem continues, record the time and contact the service owner.</p>
         <div class="page-actions">
             {% if product_nav_items %}<a class="primary-link" href="{% url product_nav_items.0.url_name %}">Return to {{ product_nav_items.0.label|lower }}</a>{% endif %}

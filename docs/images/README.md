@@ -1,7 +1,16 @@
 # Image status
 
-The PNG files in this directory show the pre-2.1 interface and are retained only
-as design history. They are intentionally not embedded in the current README.
+## Current release evidence
+
+![Aegis-Credit local demonstration assessment screen](aegis-credit-assessment-2026-08-30.png)
+
+| Capture | Application / model | Viewport | Data | Status |
+|---|---|---:|---|---|
+| `aegis-credit-assessment-2026-08-30.png` | Aegis-Credit local demo / synthetic model 2.2.0 | Desktop | Blank synthetic-demo form | Current |
+
+The PNG files previously in this directory show the pre-2.1 interface and are
+retained only as design history. They are intentionally not embedded in the
+current README.
 
 Current product behavior should be verified from the running application. New
 release screenshots should be captured after the authenticated and unauthenticated

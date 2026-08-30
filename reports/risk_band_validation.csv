@@ -1,0 +1,4 @@
+evaluation_split,risk_band_policy_version,risk_band,count,population_share,defaults,observed_default_rate,default_rate_ci_lower,default_rate_ci_upper,low_cutoff,medium_cutoff
+threshold_selection,validation-v1,low,56,0.15555555555555556,3,0.05357142857142857,0.01838544792866792,0.14607539536429218,0.07,0.3
+threshold_selection,validation-v1,medium,272,0.7555555555555555,37,0.13602941176470587,0.10032520250190624,0.18187153649612736,0.07,0.3
+threshold_selection,validation-v1,high,32,0.08888888888888889,16,0.5,0.33630614316859386,0.6636938568314061,0.07,0.3

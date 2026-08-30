@@ -1,6 +1,6 @@
 {% extends "app/base.html" %}
 
-{% block title %}Access restricted · Vantage Risk{% endblock %}
+{% block title %}Access restricted · Aegis-Credit{% endblock %}
 
 {% block content %}
 <section class="error-shell" aria-labelledby="error-title">
@@ -8,7 +8,7 @@
         <span class="error-code" aria-hidden="true">403</span>
         <span class="eyebrow">Access restricted</span>
         <h1 id="error-title">Your account cannot open this area</h1>
-        <p>{{ error_message|default:"This page requires a different Vantage Risk role." }}</p>
+        <p>{{ error_message|default:"This page requires a different Aegis-Credit role." }}</p>
         <div class="page-actions">
             {% if product_nav_items %}
                 <a class="primary-link" href="{% url product_nav_items.0.url_name %}">Return to {{ product_nav_items.0.label|lower }}</a>

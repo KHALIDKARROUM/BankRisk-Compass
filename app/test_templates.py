@@ -377,7 +377,7 @@ class ProductShellTemplateTests(TestCase):
         )
         html = render_to_string("app/reports.html", context, request=self.request("/reports/"))
         self.assertIn("<h1>Reports built for confident model decisions.</h1>", html)
-        self.assertIn("Model and governance reports · Vantage Risk", html)
+        self.assertIn("Model and governance reports · Aegis-Credit", html)
         self.assertIn('/report-artifacts/final_model_metrics.csv/', html)
         self.assertIn("Restricted release asset", html)
         self.assertIn("<caption", html)

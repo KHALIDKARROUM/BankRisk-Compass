@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Clear, human-centered loan application risk assessment.">
-    <title>{% block title %}Vantage Risk{% endblock %}</title>
+    <title>{% block title %}Aegis-Credit{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'app/styles.css' %}?v=3">
     <script src="{% static 'app/app.js' %}?v=3" defer></script>
 </head>
@@ -13,13 +13,13 @@
     <a class="skip-link" href="#main-content">{{ skip_link_text|default:"Skip to main content" }}</a>
 
     <header class="topbar">
-        <a class="brand" href="{% url 'assessment' %}" aria-label="Vantage Risk home">
+        <a class="brand" href="{% url 'assessment' %}" aria-label="Aegis-Credit home">
             <span class="brand-mark" aria-hidden="true">
                 <span class="brand-mark-core"></span>
                 <span class="brand-mark-orbit"></span>
             </span>
             <span>
-                <strong>Vantage Risk</strong>
+                <strong>Aegis-Credit</strong>
                 <small>Decision intelligence</small>
             </span>
         </a>
@@ -89,7 +89,7 @@
         {% endif %}
 
         <footer class="footer-row">
-            <p>{{ footer_message|default:"Vantage Risk provides decision support for controlled staff workflows." }}</p>
+            <p>{{ footer_message|default:"Aegis-Credit provides decision support for controlled staff workflows." }}</p>
             <span>{{ display_date }}</span>
         </footer>
     </main>

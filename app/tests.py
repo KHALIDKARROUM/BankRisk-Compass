@@ -67,7 +67,10 @@ class ApplicantAssessmentFormTests(SimpleTestCase):
         self.assertIsNone(form["person_income"].value())
         self.assertIsNone(form["person_home_ownership"].value())
         demo = ApplicantAssessmentForm(bundle=self.bundle, use_demo=True)
-        self.assertEqual(demo["person_income"].value(), 55000)
+        self.assertEqual(
+            demo["person_income"].value(),
+            round(self.bundle["feature_reference"]["numeric_medians"]["person_income"]),
+        )
         self.assertEqual(demo["person_home_ownership"].value(), "RENT")
 
     def test_zero_income_is_rejected(self) -> None:
@@ -120,7 +123,7 @@ class ServiceTests(SimpleTestCase):
         services.load_model_bundle.cache_clear()
         try:
             bundle = services.load_model_bundle()
-            self.assertEqual(bundle["model_version"], "2.1.0")
+            self.assertEqual(bundle["model_version"], "2.2.0")
         finally:
             services.load_model_bundle.cache_clear()
 
@@ -169,6 +172,7 @@ class ServiceTests(SimpleTestCase):
         self.assertEqual(frame.columns.tolist(), FEATURES)
         self.assertAlmostEqual(frame.iloc[0]["loan_percent_income"], 0.1231)
 
+    @override_settings(LOCAL_DEMO_MODE=True)
     def test_artifact_allowlist_blocks_unknown_files(self) -> None:
         self.assertIsNone(services.report_artifact_path("../../README.md"))
         self.assertIsNotNone(services.report_artifact_path("calibration_curve.png"))
@@ -265,6 +269,7 @@ class DashboardViewTests(TestCase):
             "cb_person_default_on_file": "N",
         }
 
+    @override_settings(LOCAL_DEMO_MODE=True)
     def test_health_and_readiness(self) -> None:
         health = self.client.get(reverse("health"))
         ready = self.client.get(reverse("readiness"))
@@ -296,6 +301,7 @@ class DashboardViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Local demo")
 
+    @override_settings(LOCAL_DEMO_MODE=True)
     def test_operational_pages_are_available_in_local_mode(self) -> None:
         for route_name in (
             "case-list",
@@ -337,7 +343,7 @@ class DashboardViewTests(TestCase):
         audit = PredictionAudit.objects.get()
         self.assertEqual(len(audit.feature_digest), 64)
         self.assertEqual(audit.digest_version, "hmac-sha256-v1")
-        self.assertEqual(audit.model_version, "2.1.0")
+        self.assertEqual(audit.model_version, "2.2.0")
         self.assertEqual(AssessmentCase.objects.count(), 1)
         self.assertEqual(SensitiveDataAccessLog.objects.filter(action="case_created").count(), 1)
         with connection.cursor() as cursor:
@@ -346,6 +352,7 @@ class DashboardViewTests(TestCase):
         self.assertNotIn("person_income", stored_value)
         self.assertNotIn("65000", stored_value)
 
+    @override_settings(LOCAL_DEMO_MODE=True)
     def test_report_downloads_and_allowlist(self) -> None:
         self.assertEqual(self.client.get(reverse("download-summary-csv")).status_code, 200)
         self.assertEqual(self.client.get(reverse("download-summary-pdf")).status_code, 200)
@@ -362,7 +369,7 @@ class DashboardViewTests(TestCase):
         response = self.client.get(reverse("download-api-reference-pdf"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
-        self.assertIn("vantage-risk-scoring-api-reference.pdf", response["Content-Disposition"])
+        self.assertIn("aegis-credit-scoring-api-reference.pdf", response["Content-Disposition"])
         self.assertTrue(response.content.startswith(b"%PDF-"))
 
     def test_model_manifest_matches_bundle(self) -> None:
@@ -404,7 +411,8 @@ class DashboardViewTests(TestCase):
             HTTP_IDEMPOTENCY_KEY=request_id,
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["model_version"], "2.1.0")
+        self.assertEqual(response.json()["model_version"], "2.2.0")
+        self.assertEqual(response.json()["api_client_id"], "legacy")
         self.assertIn("probability", response.json())
         replay = self.client.post(
             reverse("score-api"),

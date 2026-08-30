@@ -1,25 +1,29 @@
 {
-  "model_version": "2.1.0",
+  "model_version": "2.2.0",
   "model_name": "Gradient Boosting",
-  "trained_at_utc": "2026-06-26T00:21:20.321194+00:00",
-  "model_sha256": "13c827ac4f4dd08689b45e848cc0a4e20752dd4e32782d616d203bf001d2edfe",
-  "data_sha256": "f56c566de00c25e0979a402afc57442fd20e1f4763cf16afc818bf35040df9ef",
-  "git_commit": "cea012424f8a236b766f630321fdbb1e633e9768",
+  "trained_at_utc": "2026-08-30T00:55:38.934887+00:00",
+  "model_sha256": "9b6fb716b0b81e81f96c12fc09769133a8d4a2eb0d8bb000f229123b1d59acba",
+  "data_sha256": "32967b8a254711ea624b6ef8d64a5a97b273acc1497f62afdf58c1484188e7de",
+  "git_commit": "8ed3f90baa626fa55d65ce31e6e1d126853affe2",
   "git_dirty": true,
+  "git_tag": "local-demo",
+  "data_provenance_verified": false,
+  "dataset_kind": "synthetic_demo",
   "split_sizes": {
-    "train": 19449,
-    "selection": 2593,
-    "calibration": 1945,
-    "threshold": 1945,
-    "test": 6484
+    "train": 3600,
+    "selection": 480,
+    "calibration": 360,
+    "threshold": 360,
+    "test": 1200
   },
   "cost_assumptions": {
     "false_negative": 5,
     "false_positive": 1
   },
   "risk_bands": {
-    "low": 0.1,
-    "medium": 0.42
+    "policy_version": "validation-v1",
+    "low": 0.07,
+    "medium": 0.3
   },
   "best_params": {
     "n_estimators": 100,
@@ -28,11 +32,15 @@
     "min_samples_leaf": 1
   },
   "runtime_versions": {
-    "python": "3.13.9",
+    "python": "3.13.15",
     "numpy": "2.3.5",
     "pandas": "2.3.3",
-    "scikit_learn": "1.7.2"
+    "scikit_learn": "1.7.2",
+    "joblib": "1.5.2"
   },
+  "feature_contract_version": "1.0.0",
+  "training_mode": "synthetic_demo",
+  "random_state": 42,
   "features": [
     "person_income",
     "person_emp_length",
@@ -49,5 +57,6 @@
   ],
   "excluded_policy_features": [
     "person_age"
-  ]
+  ],
+  "threshold": 0.15
 }

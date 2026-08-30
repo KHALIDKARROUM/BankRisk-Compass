@@ -1,13 +1,13 @@
 {% extends "app/base.html" %}
 
-{% block title %}Scoring API · Vantage Risk{% endblock %}
+{% block title %}Scoring API · Aegis-Credit{% endblock %}
 
 {% block content %}
 <section class="page-heading">
     <div>
         <span class="eyebrow">Integration</span>
         <h1>Scoring API</h1>
-        <p>Human-readable reference for authenticated, rate-limited, idempotent screening.</p>
+        <p>Server-to-server loan-origination-system (LOS) handoff for authenticated, rate-limited, idempotent screening.</p>
     </div>
     <a class="download-button" href="{% url 'download-api-reference-pdf' %}">Download API reference PDF</a>
 </section>
@@ -36,6 +36,7 @@ Content-Type: application/json</pre>
         <ul>
             <li>Validates the same contract as the staff form.</li>
             <li>Stores a durable case and keyed audit fingerprint.</li>
+            <li>Returns the configured client identifier for LOS reconciliation without returning a secret.</li>
             <li>Replays the same result for a repeated idempotency key and identical payload.</li>
             <li>Rejects the same key with a different payload instead of silently overwriting a case.</li>
             <li>Does not generate explanations or adverse-action reasons.</li>
@@ -71,15 +72,20 @@ Content-Type: application/json</pre>
         <h2 id="response-example-title">Example 200 response</h2>
         <pre class="code-block" aria-labelledby="response-example-title">{
   "case_id": "72be1477-361a-4bf5-8d9f-69191529f08b",
-  "model_version": "2.1.0",
+  "model_version": "2.2.0",
   "probability": 0.184321,
   "risk_category": "Low",
   "screening_result": "No elevated repayment concern identified",
   "recommended_next_step": "Continue with standard review",
   "threshold": 0.21,
-  "warnings": []
+  "warnings": [],
+  "api_client_id": "primary-los"
 }</pre>
     </article>
+</section>
+
+<section class="note-panel">
+    <strong>LOS integration:</strong> store the returned <code>case_id</code> and the original idempotency key in the loan-origination system. Retry a timeout only with the identical request and same key. See the <a class="inline-link" href="https://github.com/KHALIDKARROUM/Aegis-Credit/blob/main/docs/LOS_INTEGRATION.md">integration guide</a> for reconciliation, credential rotation, and pilot acceptance checks.
 </section>
 
 <section class="panel data-panel">

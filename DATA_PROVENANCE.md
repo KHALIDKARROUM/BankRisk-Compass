@@ -1,44 +1,38 @@
-# Dataset Provenance Gate
+# Demonstration Dataset Provenance
 
-The exact upstream source, owner, collection period, geography, consent basis,
-field definitions, and redistribution license for `data/credit_risk.csv` have
-not been verified in this repository.
+`data/credit_risk.csv` is a **deterministic synthetic demonstration dataset**.
+It is generated entirely within this repository by
+[`src/generate_demo_data.py`](src/generate_demo_data.py), using a fixed seed
+and no external downloads, customer data, or third-party source files.
 
-The field names resemble a commonly circulated public credit-risk dataset, but
-similarity is not sufficient evidence of provenance or permission.
+## Redistribution license
 
-Before redistribution or operational use, record:
+The generated CSV and its generator are dedicated to the public domain under
+[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). The repository's
+application source remains under the MIT License. See
+[`data/LICENSE.md`](data/LICENSE.md) for the dedicated data notice.
 
-- authoritative source URL and publisher;
-- original file hash and retrieval date;
-- license text and redistribution permission;
-- population, product, geography, and collection period;
-- outcome definition and performance window;
-- missing-value, exclusion, and sampling rules;
-- de-identification and privacy assessment;
-- comparison of the source file with the included SHA-256 hash.
-- units, currency, source system, observation time, and permissible use for
-  every input field;
-- application/approval policy that created the observed population, including
-  rejected-applicant and survivorship bias;
-- target event, observation horizon, maturity/censoring rules, and label owner;
-- an approved decision on whether repository history containing the file and
-  derived artifacts must be rewritten or access-restricted.
+## Reproducibility
 
-Current project data SHA-256:
+Regenerate the checked-in file from the project root:
 
-```text
-f56c566de00c25e0979a402afc57442fd20e1f4763cf16afc818bf35040df9ef
+```bash
+python -m src.generate_demo_data
 ```
 
-Until the gate is completed, treat the file as demonstration data that is
-excluded from the project MIT license. It must not be loaded for scoring,
-training, validation, reporting, or any other operational purpose. The
-application enforces this with `DATA_PROVENANCE_VERIFIED=False` by default;
-approval must be documented before that deployment setting can be changed.
+The file is deterministic for the checked-in generator version, row count, and
+seed. The model manifest binds the exact generated-file SHA-256 to the
+unsigned local-only demo artifact.
 
-`DATA_PROVENANCE_VERIFIED=True` is an attestation, not a workaround. A signed
-release must repeat the attestation and bind the exact dataset digest. If the
-evidence cannot be obtained, remove the CSV, model pickle, notebook outputs,
-and derived reports from distributable builds and assess whether they must also
-be removed from Git history.
+## Operational prohibition
+
+The variables and outcomes are simulated. They do not represent an actual
+lender, product, geography, population, approval policy, repayment event, or
+performance window. They must not be used for lending decisions, performance
+claims, fairness conclusions, or a production model release.
+
+Any prospective production dataset requires a separate approved provenance
+record covering its authoritative source, license and permission, collection
+period, population, field definitions, de-identification/privacy assessment,
+outcome maturity, and exact digest. `DATA_PROVENANCE_VERIFIED=True` is reserved
+for that independently approved evidence; it does not approve this demo data.

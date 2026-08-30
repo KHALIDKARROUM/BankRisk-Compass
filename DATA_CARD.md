@@ -1,66 +1,45 @@
-# Aegis-Credit Data Card
+# Aegis-Credit Demonstration Data Card
 
-## Dataset
+## Dataset and source
 
-File: `data/credit_risk.csv`
+File: `data/credit_risk.csv`<br>
+Source: deterministic generator, `src/generate_demo_data.py`<br>
+License: [CC0 1.0](data/LICENSE.md)
 
-The repository contains 32,581 source rows and 12 columns. Training removes exact
-duplicates and replaces implausible ages above 100 and employment lengths above
-60 years with missing values before pipeline imputation.
+The file contains synthetic applicant-like records and simulated binary
+outcomes. It is recreated from a fixed seed, contains no real borrowers, and
+does not derive from a client or third-party lending dataset.
 
-## Fields
+## Variables
 
-- borrower: age, income, employment length, home ownership;
-- loan: amount, interest rate, grade, intent, loan-to-income ratio;
-- credit history: prior-default flag and credit-history length;
-- target: `loan_status`.
+- applicant-like inputs: age, income, employment length, home ownership;
+- loan-like inputs: requested amount, intent, synthetic rate and grade;
+- credit-like inputs: synthetic previous-default flag and history length;
+- simulated target: `loan_status`.
 
-## Data quality
+`loan_percent_income` is intentionally serialized at two decimal places and
+then recomputed from income and requested amount by the versioned feature
+contract. This demonstrates that serving does not trust a client-supplied
+derived ratio.
 
-- The target is imbalanced, with approximately 22% defaults.
-- Employment length and interest rate contain missing values.
-- A small number of age and employment values are implausible.
-- Loan-to-income ratio is always re-derived from amount and income by the same
-  versioned feature contract in training, validation, monitoring, and serving.
-- The stored source ratio disagrees with that derivation on many rows. The
-  checked-in 2.1.0 artifact predates the correction and remains demo-only; a
-  corrected release must use version 2.2.0 or later.
+## Limitations
 
-## Source and licensing
+The outcome probability is generated from a simple synthetic relationship to
+selected inputs. Any discrimination, calibration, ROC-AUC, threshold, drift,
+or fairness figure calculated from it measures only that simulation. It is not
+evidence of expected lending performance and is unsuitable for commercial or
+operational risk decisions.
 
-The original upstream source and license are not documented in this repository.
-That provenance must be established before redistribution or operational use.
-The project MIT license does not cover `data/credit_risk.csv`.
+Age is excluded from scoring and retained only for form plausibility checks and
+limited demonstration monitoring. Grade and interest rate are present solely to
+exercise data-quality controls; they are excluded from the score because real
+lenders may assign them after underwriting begins.
 
-## Representation and fairness limits
+## Production replacement requirements
 
-The dataset does not contain the full set of protected-class and product-context
-fields needed for a complete fair-lending analysis. Age is excluded from scoring
-and reported only as a limited monitoring slice. Small older-age groups make
-those results unstable.
-
-## Privacy
-
-The included dataset appears de-identified, but its provenance should be reviewed.
-The scoring audit stores a keyed digest and decision metadata without raw input
-values. A separate case record stores only the model input fields needed for
-staff review, encrypted at the application layer. Applicant references are also
-encrypted and have a keyed, exact-match lookup digest. Immutable review,
-legal-hold, outcome, monitoring, and deletion-receipt records are retained under
-the configured policy. This is data minimization, not anonymization.
-
-## Refresh and monitoring
-
-For production use, define:
-
-- an approved source and extraction date;
-- schema and range checks;
-- data-retention rules;
-- drift baselines and alert thresholds;
-- target-label maturity and delayed-performance reporting;
-- periodic representativeness reviews.
-
-Feature-reference ranges and drift baselines are generated from training rows
-only. The final test set does not contribute to operational baselines.
-Mature outcomes must be imported through the controlled outcome workflow; the
-monitoring page does not infer performance from unlabeled score volume.
+Before a controlled pilot, replace this data with a client-approved source and
+document source, license, extraction date, product/geography, currency, field
+owners, selection effects, target event and observation window, privacy review,
+and exact digest. Complete the controls in
+[`docs/GOVERNANCE_CHECKLIST.md`](docs/GOVERNANCE_CHECKLIST.md) and independently
+validate the resulting model before enabling operational scoring.

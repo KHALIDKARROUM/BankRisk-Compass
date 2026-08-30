@@ -1,9 +1,11 @@
 # Aegis-Credit
 
 Aegis-Credit is an end-to-end credit-risk screening and model-governance
-project. It combines a calibrated machine-learning model with a human review
-workflow, durable case records, batch applicant loading, monitoring, threshold
-economics, authenticated API scoring, and deployment controls.
+project for **regional and specialty lenders** that need a controlled,
+human-reviewed application triage workflow before committing to a full lending
+platform replacement. It combines a demonstration model with durable case
+records, batch applicant loading, monitoring, threshold economics,
+authenticated API scoring, and deployment controls.
 
 It is designed for learning, portfolio demonstrations, and development of a
 possible future controlled-pilot workflow. The checked-in data and model are
@@ -26,43 +28,52 @@ decline credit and does not generate compliant adverse-action notices.
 - SQLite for local use and PostgreSQL support for shared deployments;
 - Windows launchers, Docker Compose, Render configuration, health checks, and CI.
 
+## Target client and deployment boundary
+
+The target buyer is a lender with a small-to-mid-sized underwriting operation
+that already has a loan-origination system (LOS) but lacks a governed review
+queue and score-consumption workflow. Aegis-Credit is intentionally a
+**single-tenant deployment**: one client organization and its staff are served
+by one isolated database and deployment. It is not represented as a shared
+multi-client SaaS.
+
+The versioned scoring API is the integration boundary for an LOS: callers send
+one application with a client-specific API key and idempotency key, receive a
+case ID, and retain that ID in the originating system. See the API reference
+and `docs/LOS_INTEGRATION.md` for the contract, reconciliation expectations,
+and rollout plan.
+
 ## Checked-in demonstration model
 
-Version `2.1.0` is the historical, unsigned demonstration artifact. It selected
-the champion after each candidate was calibrated and given a threshold on
-separate data partitions. That run trusted a source-provided loan-to-income
-ratio while the corrected feature contract derives the ratio from amount and
-income. The figures below are therefore historical UI evidence, not validation
-of the corrected `2.2.0` contract and not production-release evidence.
+Version `2.2.0` is an unsigned, hash-checked local demonstration artifact. It
+is trained from the repository's deterministic synthetic data using the current
+canonical loan-to-income feature contract. It is eligible only for the
+explicitly labeled local demo mode and can never be promoted for shared or
+production scoring.
 
-| Model | Selection F1 | ROC-AUC | Brier score | Threshold |
-|---|---:|---:|---:|---:|
-| Gradient Boosting | 0.655 | 0.890 | 0.087 | 0.21 |
-| Random Forest | 0.643 | 0.879 | 0.091 | 0.19 |
-| Logistic Regression | 0.558 | 0.826 | 0.122 | 0.22 |
+The regenerated reports are useful for checking that the complete pipeline is
+internally consistent. Their ROC-AUC, calibration, fairness, and threshold
+figures are not evidence of lending performance because the labels are
+simulated. No historical metric is published as validation of the current
+scoring contract.
 
-The selected calibrated Gradient Boosting model achieved these results on the
-untouched final test set:
+## Current interface
 
-| Policy | Accuracy | Precision | Recall | F1 | ROC-AUC |
-|---|---:|---:|---:|---:|---:|
-| Threshold 0.50 | 0.884 | 0.880 | 0.543 | 0.672 | 0.881 |
-| Screening threshold 0.21 | 0.828 | 0.582 | 0.755 | 0.657 | 0.881 |
+![Aegis-Credit blank local-demo assessment](docs/images/aegis-credit-assessment-2026-08-30.png)
 
-At `0.21`, 28.4% of the test population is routed to review, compared with
-13.5% at `0.50`. The included 5:1 cost ratio remains illustrative. The Business
-Policy page lets reviewers replace it with explicit financial assumptions
-without silently changing the live model.
+This current local-demo capture shows the blank assessment workflow and its
+prominent demo-status boundary. It uses only synthetic data. A public online
+demo is intentionally not deployed: publishing one requires the lender's
+hosting, authentication, and data-governance approval.
 
 ## Historical validation design
 
-The cleaned dataset is divided into five non-overlapping partitions:
+The synthetic demonstration dataset is divided into five non-overlapping
+partitions during the artifact build:
 
-- training: 19,449 rows;
-- model selection: 2,593 rows;
-- probability calibration: 1,945 rows;
-- threshold selection: 1,945 rows;
-- final test: 6,484 rows.
+- training, model-selection, probability-calibration, threshold-selection, and
+  final-test partitions are recorded in `models/model_manifest.json` for the
+  exact generated artifact.
 
 Preprocessing remains inside scikit-learn pipelines. Feature-reference and drift
 baselines are built from training rows only. Loan grade and interest rate are
@@ -322,6 +333,7 @@ Copy `.env.example` as a reference. Important settings include:
 | `DATABASE_URL` | PostgreSQL connection URL |
 | `DB_SSL_REQUIRE` | Require TLS parameters for the production database connection |
 | `LOGIN_REQUIRED` | Enforce staff authentication |
+| `DEPLOYMENT_TENANT_ID` | Required opaque identifier for the lender's single-tenant deployment/database |
 | `SCORING_API_KEYS` | JSON map of per-client API secrets for independent attribution and rotation |
 | `SCORING_API_KEY` | Deprecated compatibility secret, exposed as client `legacy` |
 | `API_RATE_LIMIT_PER_MINUTE` | API request ceiling |
@@ -370,6 +382,7 @@ Staff workflows are documented in `docs/USER_GUIDE.md`. Historical interface
 images and the current screenshot checklist are described in `docs/images/README.md`.
 Optional view-context hooks for the enhanced product states are documented in
 `docs/FRONTEND_INTEGRATION.md`.
+The dedicated LOS handoff contract is in `docs/LOS_INTEGRATION.md`.
 The exact web, API, and batch schema is documented in
 `docs/INPUT_CONTRACT.md`.
 
@@ -389,13 +402,10 @@ python -m pip check
 
 ## Licensing and provenance
 
-Project source code is licensed under the MIT License. The included dataset is
-not covered by that license. Its exact upstream source and redistribution terms
-are not established in the repository; see `DATA_PROVENANCE.md`.
-
-Do not redistribute or operationalize the dataset until provenance, permission,
-geographic scope, collection period, definitions, and representativeness have
-been independently confirmed.
+Project source code is licensed under the MIT License. The included synthetic
+demonstration dataset is dedicated under CC0 1.0; see `DATA_PROVENANCE.md` and
+`data/LICENSE.md`. It has no real-world geographic scope, collection period,
+or lending population and must not be operationalized.
 
 ## What code cannot complete
 

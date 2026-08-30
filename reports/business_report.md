@@ -9,11 +9,11 @@ Age is also excluded from the probability model; it is retained only for input p
 
 Data split:
 
-- Training: 19,449 rows
-- Model selection: 2,593 rows
-- Probability calibration: 1,945 rows
-- Threshold selection: 1,945 rows
-- Final test: 6,484 rows
+- Training: 3,600 rows
+- Model selection: 480 rows
+- Probability calibration: 360 rows
+- Threshold selection: 360 rows
+- Final test: 1,200 rows
 
 Selected model parameters:
 
@@ -25,33 +25,33 @@ Selected model parameters:
 
 | Metric | Score |
 |---|---:|
-| Accuracy | 0.884 |
-| Precision | 0.880 |
-| Recall | 0.543 |
-| F1-score | 0.672 |
-| ROC-AUC | 0.881 |
-| Average precision | 0.791 |
-| Brier score | 0.089 |
+| Accuracy | 0.844 |
+| Precision | 0.500 |
+| Recall | 0.043 |
+| F1-score | 0.079 |
+| ROC-AUC | 0.691 |
+| Average precision | 0.312 |
+| Brier score | 0.122 |
 
 ## Business Threshold Results
 
-The selected business threshold is **0.21**. It assumes a false negative is 5x more costly than a false positive:
+The selected screening threshold is **0.15**. Its illustrative count-weighted objective assumes a false negative is 5x more costly than a false positive; it is not an approved expected-loss model:
 
 - False negative: a risky borrower is approved.
-- False positive: a safer borrower is rejected or sent to manual review.
+- False positive: a safer borrower is unnecessarily routed to manual review.
 
 | Metric | Score |
 |---|---:|
-| Accuracy | 0.828 |
-| Precision | 0.582 |
-| Recall | 0.755 |
-| F1-score | 0.657 |
-| ROC-AUC | 0.881 |
-| Average precision | 0.791 |
-| Brier score | 0.089 |
-| False positives | 770 |
-| False negatives | 347 |
-| Business cost | 2505 |
+| Accuracy | 0.653 |
+| Precision | 0.248 |
+| Recall | 0.604 |
+| F1-score | 0.352 |
+| ROC-AUC | 0.691 |
+| Average precision | 0.312 |
+| Brier score | 0.122 |
+| False positives | 342 |
+| False negatives | 74 |
+| Business cost | 712 |
 
 ## Interpretation
 

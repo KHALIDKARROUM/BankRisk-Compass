@@ -198,9 +198,9 @@ def evaluate_model(
 
 def tune_random_forest(X_train: pd.DataFrame, y_train: pd.Series, quick: bool) -> GridSearchCV:
     param_grid = {
-        "classifier__n_estimators": [200] if quick else [200, 300],
-        "classifier__max_depth": [None, 16] if quick else [None, 16, 24],
-        "classifier__min_samples_leaf": [1, 2],
+        "classifier__n_estimators": [50] if quick else [200, 300],
+        "classifier__max_depth": [16] if quick else [None, 16, 24],
+        "classifier__min_samples_leaf": [2] if quick else [1, 2],
     }
 
     search = GridSearchCV(
@@ -212,7 +212,7 @@ def tune_random_forest(X_train: pd.DataFrame, y_train: pd.Series, quick: bool) -
             )
         ),
         param_grid=param_grid,
-        cv=3,
+        cv=2 if quick else 3,
         scoring="f1",
         n_jobs=-1,
         verbose=0,
@@ -680,20 +680,33 @@ The model is a decision-support tool, not an autonomous approval system. The bus
     (REPORTS_DIR / "business_report.md").write_text(report, encoding="utf-8")
 
 
-def train_and_save(quick: bool = False, require_clean: bool = False, release: bool = False) -> dict[str, Any]:
-    if not release:
-        raise RuntimeError("Refusing to overwrite a release artifact outside `--release` mode.")
-    if quick:
+def train_and_save(
+    quick: bool = False,
+    require_clean: bool = False,
+    release: bool = False,
+    demo: bool = False,
+) -> dict[str, Any]:
+    """Train either a signed release or an explicitly local-only demo artifact.
+
+    A demo build is intentionally unsigned and is never considered an approved
+    release, regardless of the data being used.  It exists so the portfolio can
+    ship a current, reproducible UI artifact without publishing unsupported
+    lending-performance claims.
+    """
+
+    if release == demo:
+        raise RuntimeError("Choose exactly one artifact mode: `--release` or `--demo`.")
+    if quick and release:
         raise RuntimeError(
             "Quick training is for local experimentation and cannot produce a release artifact."
         )
-    if git_is_dirty() is not False:
+    if release and git_is_dirty() is not False:
         raise RuntimeError(
             "Refusing to produce a release artifact from a dirty Git worktree."
         )
-    if os.getenv("DATA_PROVENANCE_VERIFIED", "").lower() not in {"1", "true", "yes"}:
+    if release and os.getenv("DATA_PROVENANCE_VERIFIED", "").lower() not in {"1", "true", "yes"}:
         raise RuntimeError("Refusing to train a release from data without verified provenance approval.")
-    release_tag = git_release_tag(MODEL_VERSION)
+    release_tag = git_release_tag(MODEL_VERSION) if release else "local-demo"
     MODELS_DIR.mkdir(exist_ok=True)
     REPORTS_DIR.mkdir(exist_ok=True)
 
@@ -935,14 +948,14 @@ def train_and_save(quick: bool = False, require_clean: bool = False, release: bo
         "excluded_policy_features": EXCLUDED_POLICY_FEATURES,
         "feature_contract_version": FEATURE_CONTRACT_VERSION,
         "model_version": MODEL_VERSION,
-        "training_mode": "full_release",
+        "training_mode": "full_release" if release else "synthetic_demo",
         "random_state": RANDOM_STATE,
         "trained_at_utc": datetime.now(timezone.utc).isoformat(),
         "data_sha256": file_sha256(DATA_PATH),
         "git_commit": git_commit(),
-        "git_dirty": False,
+        "git_dirty": False if release else git_is_dirty(),
         "git_tag": release_tag,
-        "data_provenance_verified": True,
+        "data_provenance_verified": bool(release),
         "split_sizes": split_sizes,
         "cost_assumptions": {
             "false_negative": FALSE_NEGATIVE_COST,
@@ -957,6 +970,44 @@ def train_and_save(quick: bool = False, require_clean: bool = False, release: bo
         },
         "risk_bands": risk_band_policy,
     }
+
+    if demo:
+        # The demo is intentionally a conventional local artifact. It is
+        # hash-checked by the runtime but cannot be promoted as a release.
+        joblib.dump(bundle, MODEL_BUNDLE_PATH, compress=3)
+        manifest = {
+            "model_version": MODEL_VERSION,
+            "model_name": model_name,
+            "trained_at_utc": bundle["trained_at_utc"],
+            "model_sha256": file_sha256(MODEL_BUNDLE_PATH),
+            "data_sha256": bundle["data_sha256"],
+            "git_commit": bundle["git_commit"],
+            "git_dirty": bundle["git_dirty"],
+            "git_tag": "local-demo",
+            "data_provenance_verified": False,
+            "dataset_kind": "synthetic_demo",
+            "split_sizes": bundle["split_sizes"],
+            "cost_assumptions": bundle["cost_assumptions"],
+            "risk_bands": bundle["risk_bands"],
+            "best_params": bundle["best_params"],
+            "runtime_versions": bundle["runtime_versions"],
+            "feature_contract_version": FEATURE_CONTRACT_VERSION,
+            "training_mode": bundle["training_mode"],
+            "random_state": bundle["random_state"],
+            "features": FEATURES,
+            "excluded_lender_assigned_features": EXCLUDED_LENDER_ASSIGNED_FEATURES,
+            "excluded_policy_features": EXCLUDED_POLICY_FEATURES,
+            "threshold": business_threshold,
+        }
+        MODEL_MANIFEST_PATH.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        return {
+            "model_path": str(MODEL_BUNDLE_PATH),
+            "model_comparison": results,
+            "default_metrics": final_metrics,
+            "business_metrics": business_metrics,
+            "business_threshold": business_threshold,
+            "model_name": model_name,
+        }
 
     # Release bundles are content-addressed and never overwritten. The manifest
     # is signed only after the immutable artifact path and digest are known.
@@ -1031,6 +1082,11 @@ def parse_args() -> argparse.Namespace:
         help="Build a signed immutable release from a clean, tagged commit.",
     )
     parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Build an unsigned local-only synthetic demonstration artifact.",
+    )
+    parser.add_argument(
         "--require-clean",
         action="store_true",
         help="Fail when Git has uncommitted changes.",
@@ -1040,7 +1096,12 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == "__main__":
     args = parse_args()
-    output = train_and_save(quick=args.quick, require_clean=args.require_clean, release=args.release)
+    output = train_and_save(
+        quick=args.quick,
+        require_clean=args.require_clean,
+        release=args.release,
+        demo=args.demo,
+    )
     print(f"Saved model bundle: {output['model_path']}")
     print(f"Business threshold: {output['business_threshold']:.2f}")
     print(f"Selected model: {output['model_name']}")
